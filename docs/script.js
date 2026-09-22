@@ -157,6 +157,7 @@ async function loadCurrentPage(initial = false) {
     const activePage = document.querySelector('.page.active');
     activePage.style.visibility = 'hidden';
     status.textContent = 'Consultando resultados…';
+    status.hidden = false;
     status.classList.remove('error');
     document.getElementById('btn-download-report').disabled = true;
     try {
@@ -166,7 +167,8 @@ async function loadCurrentPage(initial = false) {
         habData = data.registros;
         analiseData = data.analise;
         if (initial) loadFilters();
-        status.textContent = data.metodologia;
+        status.textContent = '';
+        status.hidden = true;
         const loaders = {'visao-geral': loadVisaoGeral, habilidades: loadHabilidades,
             escolas: loadEscolas, detalhamento: loadDetalhamento, relatorios: loadRelatorios};
         if (loaders[page]) loaders[page]();
@@ -176,6 +178,7 @@ async function loadCurrentPage(initial = false) {
         painelData = null;
         habData = [];
         status.textContent = error.message + ' Recarregue a página para tentar novamente.';
+        status.hidden = false;
         status.classList.add('error');
     }
 }
