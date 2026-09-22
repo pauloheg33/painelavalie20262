@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupSidebar();
     setupNavigation();
     setupReportActions();
+    setupStudentActions();
     setupFilterListeners();
     await loadCurrentPage(true);
 });
@@ -169,6 +170,11 @@ async function loadCurrentPage(initial = false) {
         if (initial) loadFilters();
         status.textContent = '';
         status.hidden = true;
+        if (page === 'alunos') {
+            await loadAlunos(version);
+            if (version === requestVersion) activePage.style.visibility = '';
+            return;
+        }
         const loaders = {'visao-geral': loadVisaoGeral, habilidades: loadHabilidades,
             escolas: loadEscolas, detalhamento: loadDetalhamento, relatorios: loadRelatorios};
         if (loaders[page]) loaders[page]();

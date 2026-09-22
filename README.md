@@ -33,7 +33,7 @@ Consolidação: `backend/data/DADOS_ACERTO_POR_HABILIDADE.xlsx`, abas `ITENS_2_A
 
 Base individual: `backend/data/Database.xlsx`, abas `2º ano`, `4º e 5º` e `8º e 9º`. Contém 896 registros de avaliação, com alunos, alternativas, totais e listas de questões erradas. Os 1.312 resultados por item foram reconciliados com a consolidação. O arquivo individual e o banco com nomes ficam locais e estão ignorados pelo Git. Para executar a importação completa após clonar o repositório, disponibilize também esse arquivo na pasta indicada.
 
-**896 registros não equivalem a 896 estudantes distintos.** No 2º ano são 173 registros de LP e 165 de MT; nos demais anos são 98, 150, 149 e 161 registros de cadernos conjuntos. Não há identificador estável de estudante nem coluna de turma. A API expõe apenas resultados agregados.
+**896 registros não equivalem a 896 estudantes distintos.** No 2º ano são 173 registros de LP e 165 de MT; nos demais anos são 98, 150, 149 e 161 registros de cadernos conjuntos. Não há identificador estável de estudante nem coluna de turma. A publicação estática e a rota `/api/painel` expõem apenas resultados agregados; as consultas nominais usam rotas restritas ao acesso local.
 
 Foram encontradas seis divergências entre a quantidade de questões na lista e a coluna Erros: aba `4º e 5º`, linhas 105–110, EEF Francisco Mourão Lima, C0501. Preservamos os dados originais e apuramos os itens pelas listas, conforme o método informado. Os detalhes ficam nos metadados do banco e a ocorrência é sinalizada no painel e no relatório dessa escola.
 
@@ -49,9 +49,19 @@ O banco gerado fica em `backend/data/avalie.sqlite3` e não é versionado. `pyth
 
 É possível especificar `--source consolidacao.xlsx --individual registros.xlsx --database arquivo.sqlite3`. Para a API consultar outro banco, defina a variável `AVALIE_DB` com o caminho absoluto. O modo `--consolidated-only` importa apenas a consolidação e identifica as médias como não ponderadas, deixando indisponíveis as contagens de avaliações.
 
-Tabelas: `schools`, `items`, `item_rates`, `evaluation_records`, `item_answers` e `metadata`. Cada taxa e registro preserva aba e linha de origem. Os metadados registram SHA-256 das fontes, data de importação e divergências. Os nomes de escola da base individual são associados às identificações da consolidação, incluindo as variantes abreviadas. A API abre o banco em modo somente leitura e não expõe nomes de alunos nem arquivos Excel ou SQLite.
+Tabelas: `schools`, `items`, `item_rates`, `evaluation_records`, `item_answers` e `metadata`. Cada taxa e registro preserva aba e linha de origem. Os metadados registram SHA-256 das fontes, data de importação e divergências. Os nomes de escola da base individual são associados às identificações da consolidação, incluindo as variantes abreviadas. A API abre o banco em modo somente leitura e não serve arquivos Excel ou SQLite.
 
 ## Regras atuais
+
+### Resultados dos Alunos
+
+A aba usa os registros de `Database.xlsx`. Na versão local, permite busca por nome (com ou sem acentos), filtros de faixa e ordenação, paginação de 25 avaliações e consulta dos itens de cada prova. Os itens exibem a alternativa registrada e o acerto/erro apurado pela lista. Os totais informados no caderno são mostrados separadamente, preservando as seis divergências conhecidas.
+
+No GitHub Pages, a mesma aba mostra apenas resumos por escola, ano e caderno, com contagens e distribuição das avaliações por faixa. Não publica nomes, identificadores de avaliações ou alternativas individuais. Os endpoints nominais `/api/alunos` e `/api/alunos/{id}` são restritos ao acesso loopback local, não aceitam origens externas e retornam `Cache-Control: no-store`. Isso não substitui autenticação para uma futura hospedagem privada.
+
+“Média por avaliação” é a média aritmética dos percentuais dos registros selecionados; “Acertos nos itens” é a razão entre acertos e oportunidades de resposta. Podem diferir porque os cadernos possuem quantidades diferentes de itens. Filtros de componente recalculam o resultado somente com os itens correspondentes. Os registros conjuntos nunca são duplicados na seleção de ambos os componentes.
+
+### Cálculos
 
 - A identidade do item inclui ano, componente, caderno e número. Não agrega itens de provas distintas com o mesmo número.
 - Uma taxa é importada com sua precisão original; arredondamento para uma casa decimal ocorre na apresentação.

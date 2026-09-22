@@ -42,6 +42,10 @@
                 <span class="material-icons-round">table_chart</span>
                 <span class="nav-label">Detalhamento</span>
             </li>
+            <li class="nav-item" data-page="alunos" title="Resultados dos Alunos">
+                <span class="material-icons-round">groups</span>
+                <span class="nav-label">Resultados dos Alunos</span>
+            </li>
             <li class="nav-item" data-page="relatorios">
                 <span class="material-icons-round">description</span>
                 <span class="nav-label">Relatórios</span>
@@ -236,6 +240,51 @@
             </div>
         </section>
 
+        <section id="page-alunos" class="page">
+            <div class="section-header">
+                <h2>Resultados dos Alunos</h2>
+                <p id="student-mode"></p>
+            </div>
+            <div class="kpi-strip" id="student-kpis"></div>
+            <div class="grid-2col student-charts">
+                <div class="card chart-card">
+                    <h3 class="card-title">Avaliações por Faixa de Desempenho</h3>
+                    <div class="chart-wrapper"><canvas id="chart-student-bands"></canvas></div>
+                </div>
+                <div class="card">
+                    <h3 class="card-title">Resultados da seleção</h3>
+                    <div id="student-summary" class="student-summary"></div>
+                </div>
+            </div>
+            <div id="student-local-controls" class="student-toolbar hidden">
+                <div class="filter-group student-search">
+                    <label for="student-search">Buscar aluno</label>
+                    <input id="student-search" type="search" placeholder="Digite o nome do aluno" autocomplete="off">
+                </div>
+                <div class="filter-group">
+                    <label for="student-band">Faixa de desempenho</label>
+                    <select id="student-band"><option>Todas</option><option>Crítico</option><option>Atenção</option><option>Adequado</option></select>
+                </div>
+                <div class="filter-group">
+                    <label for="student-sort">Ordenar por</label>
+                    <select id="student-sort"><option value="nome">Nome do aluno</option><option value="menor">Menor percentual</option><option value="maior">Maior percentual</option></select>
+                </div>
+            </div>
+            <div id="student-empty" class="report-empty hidden">Não há avaliações para os filtros selecionados.</div>
+            <div class="table-wrapper student-table-wrap" id="student-table-wrapper">
+                <table class="student-table"><thead id="student-head"></thead><tbody id="student-body"></tbody></table>
+            </div>
+            <div id="student-pagination" class="student-pagination hidden">
+                <button id="student-prev" class="student-button" type="button">Anterior</button>
+                <span id="student-page-info" role="status"></span>
+                <button id="student-next" class="student-button" type="button">Próxima</button>
+            </div>
+            <section id="student-detail" class="card student-detail hidden" aria-live="polite" tabindex="-1">
+                <div class="student-detail-top"><h3 class="card-title">Detalhes da avaliação</h3><button id="student-close" class="student-button" type="button">Fechar</button></div>
+                <div id="student-detail-content"></div>
+            </section>
+        </section>
+
         <!-- PAGE: RELATÓRIOS -->
         <section id="page-relatorios" class="page">
             <div class="section-header">
@@ -303,5 +352,6 @@
 
     <script src="config.js"></script>
     <script src="script.js"></script>
+    <script src="students.js"></script>
 </body>
 </html>

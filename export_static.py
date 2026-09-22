@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 
 from backend.services.data_service import get_painel
+from backend.services.student_service import get_student_results
 
 ROOT = Path(__file__).resolve().parent
 
@@ -22,12 +23,13 @@ def export_static(destination=ROOT / 'docs'):
         payload = get_painel(school, year, component)
         # Lista explícita de campos agregados: nenhuma consulta de registros individuais.
         result = {k: payload[k] for k in ('indicadores','itens','registros','distribuicao')}
+        result['alunos'] = get_student_results(school,year,component,identified=False)
         name = f'{index:03d}.json'
         (data_dir / name).write_text(json.dumps(result,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
         key = json.dumps([school,year,component],ensure_ascii=False,separators=(',',':'))
         manifest['consultas'][key] = name
     (data_dir / 'index.json').write_text(json.dumps(manifest,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
-    for filename in ('index.html','style.css','script.js'):
+    for filename in ('index.html','style.css','script.js','students.js'):
         shutil.copyfile(ROOT / 'frontend' / filename, destination / filename)
     (destination / 'config.js').write_text('window.AVALIE_STATIC = true;\n',encoding='utf-8')
     (destination / '.nojekyll').write_text('',encoding='utf-8')

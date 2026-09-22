@@ -361,6 +361,31 @@ body { display:flex; }
 }
 
 /* ===== SCROLLBAR ===== */
+.student-charts { margin-bottom:16px; }
+.student-summary { color:#34506B; line-height:1.7; }
+.student-summary p + p { margin-top:10px; }
+.student-toolbar { display:flex; flex-wrap:wrap; gap:12px; margin:16px 0; align-items:flex-end; }
+.student-search { flex:1; min-width:180px; }
+.student-search input { border:1px solid #D6E0EE; border-radius:6px; padding:7px 10px; font:inherit; min-width:0; }
+.student-table { width:100%; border-collapse:collapse; font-size:12px; }
+.student-table thead { position:sticky; top:0; z-index:2; }
+.student-table th { background:#17324D; color:white; padding:10px 12px; text-align:left; white-space:nowrap; }
+.student-table td { padding:10px 12px; border-bottom:1px solid #e8eef5; vertical-align:top; }
+.student-table tbody tr:hover { background:#EEF4FF; }
+.student-table-wrap { max-height:560px; }
+.student-button { border:1px solid #D6E0EE; border-radius:6px; background:#fff; color:#173A5E; padding:6px 10px; font:inherit; cursor:pointer; white-space:nowrap; }
+.student-button:hover:not(:disabled) { background:#EEF4FF; }
+.student-button:disabled { opacity:.4; cursor:default; }
+.student-pagination { display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-top:12px; font-size:12px; }
+.student-detail { margin-top:16px; scroll-margin-top:16px; }
+.student-detail-top { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.student-detail-meta { color:#34506B; line-height:1.7; margin-bottom:14px; }
+.student-answer-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(105px,1fr)); gap:8px; margin:12px 0 18px; }
+.student-answer { border:1px solid #86EFAC; border-radius:8px; padding:10px; background:#DCFCE7; color:#166534; }
+.student-answer.wrong { border-color:#FCA5A5; background:#FEE2E2; color:#991B1B; }
+.student-answer small { display:block; margin-top:4px; }
+.student-review { color:#92400E; background:#FEF3C7; border-radius:6px; padding:8px 10px; margin:10px 0; line-height:1.6; }
+
 ::-webkit-scrollbar { width:6px; height:6px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:#CBD5E1; border-radius:3px; }

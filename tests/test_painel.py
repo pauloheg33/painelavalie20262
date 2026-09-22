@@ -12,6 +12,9 @@ from backend.services.data_service import get_painel, classificar_faixa
 from backend.main import painel
 from fastapi import HTTPException
 from backend.import_records import parse_wrong_items
+from backend.services.student_service import get_student_results, get_student_detail
+from backend.main import require_local, student_results
+from starlette.requests import Request
 
 
 class PainelTests(unittest.TestCase):
@@ -112,6 +115,60 @@ class PainelTests(unittest.TestCase):
             expected = get_painel(*selection)
             for field in ('indicadores','itens','registros','distribuicao'):
                 self.assertEqual(actual[field],expected[field])
+            self.assertEqual(actual['alunos'],get_student_results(*selection))
+
+    def test_student_summary_counts_physical_records(self):
+        result = get_student_results()
+        self.assertEqual(result['resumo']['registros'],896)
+        self.assertEqual(result['resumo']['itens'],34468)
+        self.assertEqual(sum(result['resumo']['distribuicao']['values']),896)
+        self.assertEqual(result['resumo']['divergentes'],6)
+        self.assertEqual(len(result['grupos']),34)
+        self.assertEqual(sum(row['registros'] for row in result['grupos']),896)
+        self.assertNotIn('registros', {k:v for k,v in result.items() if k != 'resumo'})
+        with closing(sqlite3.connect(self.database)) as conn:
+            for name, in conn.execute('SELECT DISTINCT student_name FROM evaluation_records'):
+                self.assertNotIn(name,str(result))
+
+    def test_student_component_items_and_empty_selection(self):
+        both = get_student_results(ano='4º Ano',identified=True)['registros']
+        lp = get_student_results(ano='4º Ano',componente='Língua Portuguesa',identified=True)['registros']
+        mt = get_student_results(ano='4º Ano',componente='Matemática',identified=True)['registros']
+        self.assertEqual(len(both),98)
+        lp_map,mt_map = {r['id']:r for r in lp},{r['id']:r for r in mt}
+        for row in both:
+            self.assertEqual(row['itens'],44)
+            self.assertEqual(lp_map[row['id']]['itens'],22)
+            self.assertEqual(mt_map[row['id']]['itens'],22)
+            self.assertEqual(row['acertos'],lp_map[row['id']]['acertos']+mt_map[row['id']]['acertos'])
+        empty = get_student_results('EEF 21 DE DEZEMBRO','2º Ano')
+        self.assertEqual(empty['resumo']['registros'],0)
+        self.assertIsNone(empty['resumo']['media_registros'])
+
+    def test_student_detail_preserves_reported_totals(self):
+        result = get_student_results(identified=True)
+        row = next(r for r in result['registros'] if r['origem_aba']=='4º e 5º' and r['origem_linha']==105)
+        self.assertTrue(row['divergente'])
+        self.assertEqual(row['acertos'],31)
+        self.assertEqual(row['acertos_informados'],28)
+        detail = get_student_detail(row['id'],'Matemática')
+        self.assertEqual([r['numero'] for r in detail['itens']],list(range(23,45)))
+        self.assertIsNone(get_student_detail(-1))
+
+    def test_student_routes_only_allow_local_requests(self):
+        def request(client='127.0.0.1',host='127.0.0.1:8000',origin=None):
+            headers = [(b'host',host.encode())]
+            if origin:
+                headers.append((b'origin',origin.encode()))
+            return Request({'type':'http','method':'GET','scheme':'http','path':'/api/alunos',
+                            'query_string':b'','headers':headers,'client':(client,1234),'server':('127.0.0.1',8000)})
+        require_local(request())
+        response = student_results(request(),None,None,None)
+        self.assertEqual(response.headers['cache-control'],'no-store')
+        for req in [request(client='192.168.1.2'),request(host='example.com'),request(origin='https://example.com')]:
+            with self.assertRaises(HTTPException) as result:
+                require_local(req)
+            self.assertEqual(result.exception.status_code,403)
 
     def test_parameterized_school_filter(self):
         self.assertEqual(get_painel("' OR 1=1 --")['registros'], [])
