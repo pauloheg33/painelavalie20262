@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAINEL DE RESULTADOS — CICLO II 2026</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@5.0.8/dist/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <span class="material-icons-round">school</span>
+                <span class="sidebar-title">SADE</span>
+            </div>
+            <button id="btn-toggle-sidebar" class="btn-toggle-sidebar" title="Recolher menu">
+                <span class="material-icons-round">menu</span>
+            </button>
+        </div>
+        <ul class="sidebar-nav">
+            <li class="nav-item active" data-page="visao-geral">
+                <span class="material-icons-round">dashboard</span>
+                <span class="nav-label">Visão Geral</span>
+            </li>
+            <li class="nav-item" data-page="habilidades">
+                <span class="material-icons-round">psychology</span>
+                <span class="nav-label">Habilidades</span>
+            </li>
+            <li class="nav-item" data-page="escolas">
+                <span class="material-icons-round">apartment</span>
+                <span class="nav-label">Escolas</span>
+            </li>
+            <li class="nav-item" data-page="detalhamento">
+                <span class="material-icons-round">table_chart</span>
+                <span class="nav-label">Detalhamento</span>
+            </li>
+            <li class="nav-item" data-page="relatorios">
+                <span class="material-icons-round">description</span>
+                <span class="nav-label">Relatórios</span>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <span class="material-icons-round">person</span>
+            <span class="nav-label">Técnico Responsável<br>Analista de Avaliações</span>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main id="main-content" class="main-content">
+        <!-- HEADER -->
+        <header class="top-header">
+            <div class="header-left">
+                <h1 class="header-title">PAINEL DE RESULTADOS — CICLO II 2026</h1>
+                <p class="header-subtitle">COORDENADORIA DE FORMAÇÃO, ESTATÍSTICA E AVALIAÇÃO EDUCACIONAL · MUNICÍPIO DE ARARENDÁ</p>
+            </div>
+            <div class="header-filters" id="header-filters">
+                <div class="filter-group">
+                    <label for="filter-escola">Escola</label>
+                    <select id="filter-escola"><option>Todas</option></select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-ano">Ano</label>
+                    <select id="filter-ano"><option>Todos</option></select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-componente">Componente</label>
+                    <select id="filter-componente"><option>Todos</option></select>
+                </div>
+            </div>
+        </header>
+
+        <!-- PAGE: VISÃO GERAL -->
+        <section id="page-visao-geral" class="page active">
+            <div class="kpi-strip" id="kpi-strip"></div>
+            <div class="grid-2col">
+                <div class="card chart-card">
+                    <h3 class="card-title">Desempenho por Habilidade</h3>
+                    <div class="chart-wrapper"><canvas id="chart-hab-geral"></canvas></div>
+                </div>
+                <div class="card chart-card">
+                    <h3 class="card-title">Distribuição por Faixa de Desempenho</h3>
+                    <div class="chart-wrapper"><canvas id="chart-distribuicao"></canvas></div>
+                </div>
+            </div>
+            <div class="grid-2col" style="margin-top:12px;">
+                <div class="card chart-card">
+                    <h3 class="card-title">Ranking — Menor Desempenho</h3>
+                    <div class="chart-wrapper"><canvas id="chart-ranking-baixo"></canvas></div>
+                </div>
+                <div class="card chart-card">
+                    <h3 class="card-title">Ranking — Maior Desempenho</h3>
+                    <div class="chart-wrapper"><canvas id="chart-ranking-alto"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE: HABILIDADES -->
+        <section id="page-habilidades" class="page">
+            <div class="section-header">
+                <h2>Habilidades Avaliadas</h2>
+                <p>Clique em um card para ver detalhes da habilidade.</p>
+            </div>
+            <div class="hab-layout">
+                <div class="hab-grid-wrap">
+                    <div class="hab-grid" id="hab-grid"></div>
+                </div>
+                <aside class="hab-detail-panel" id="hab-detail-panel">
+                    <div class="hab-detail-empty hidden" id="hab-detail-empty"></div>
+                    <div class="hab-detail-content hidden" id="hab-detail-content">
+                        <div class="hab-detail-top">
+                            <div class="hab-detail-mini">
+                                <div class="hab-detail-label">Código Habilidade CAEd</div>
+                                <div class="hab-detail-value" id="hab-detail-caed"></div>
+                            </div>
+                            <div class="hab-detail-mini">
+                                <div class="hab-detail-label">Código da habilidade</div>
+                                <div class="hab-detail-highlight" id="hab-detail-pos"></div>
+                            </div>
+                        </div>
+                        <div class="hab-detail-section hab-detail-section-desc">
+                            <div class="hab-detail-label">Habilidade</div>
+                            <div class="hab-detail-text" id="hab-detail-desc"></div>
+                        </div>
+                        <div class="hab-detail-meta-grid">
+                            <div class="hab-detail-section">
+                                <div class="hab-detail-label">Avaliação</div>
+                                <div class="hab-detail-value" id="hab-detail-avaliacao"></div>
+                            </div>
+                            <div class="hab-detail-section">
+                                <div class="hab-detail-label">Ano escolar</div>
+                                <div class="hab-detail-value" id="hab-detail-ano"></div>
+                            </div>
+                            <div class="hab-detail-section">
+                                <div class="hab-detail-label">Componente curricular</div>
+                                <div class="hab-detail-value" id="hab-detail-componente"></div>
+                            </div>
+                            <div class="hab-detail-section">
+                                <div class="hab-detail-label">Escola</div>
+                                <div class="hab-detail-value" id="hab-detail-escola"></div>
+                            </div>
+                            <div class="hab-detail-section">
+                                <div class="hab-detail-label">Percentual de acerto</div>
+                                <div class="hab-detail-value" id="hab-detail-pct"></div>
+                            </div>
+                            <div class="hab-detail-section">
+                                <div class="hab-detail-label">Faixa de desempenho</div>
+                                <div class="hab-detail-value" id="hab-detail-faixa"></div>
+                            </div>
+                            <div class="hab-detail-section hab-detail-section-span">
+                                <div class="hab-detail-label">Nível de dificuldade</div>
+                                <div class="hab-detail-value" id="hab-detail-nivel"></div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+            <div class="hab-legenda">
+                <span class="hab-legenda-item"><span class="hab-legenda-cor" style="background:linear-gradient(135deg,#fca5a5,#f87171);"></span> Crítico (≤ 56%)</span>
+                <span class="hab-legenda-item"><span class="hab-legenda-cor" style="background:linear-gradient(135deg,#fdba74,#fb923c);"></span> Atenção (56,01% – 80%)</span>
+                <span class="hab-legenda-item"><span class="hab-legenda-cor" style="background:linear-gradient(135deg,#86efac,#4ade80);"></span> Adequado (80,01% – 100%)</span>
+            </div>
+        </section>
+
+        <!-- PAGE: ESCOLAS -->
+        <section id="page-escolas" class="page">
+            <div class="section-header">
+                <h2>Desempenho por Escola</h2>
+                <p>ANÁLISE COMPARATIVA POR ESCOLA, ETAPA E COMPONENTE CURRICULAR — CICLO II 2026</p>
+            </div>
+
+            <!-- KPI strip -->
+            <div class="kpi-strip" id="esc-kpi-strip"></div>
+
+            <!-- Row 1: Ranking + LP×MT -->
+            <div class="grid-2col" style="margin-top:0;">
+                <div class="card chart-card">
+                    <h3 class="card-title">Ranking Geral das Escolas</h3>
+                    <div class="chart-wrapper" style="height:270px;"><canvas id="chart-esc-ranking"></canvas></div>
+                </div>
+                <div class="card chart-card">
+                    <h3 class="card-title">Língua Portuguesa × Matemática por Escola</h3>
+                    <div class="chart-wrapper" style="height:270px;"><canvas id="chart-esc-lp-mt"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Row 2: Etapas + Críticas -->
+            <div class="grid-2col" style="margin-top:12px;">
+                <div class="card chart-card">
+                    <h3 class="card-title">LP × Matemática por Ano Escolar</h3>
+                    <div class="chart-wrapper"><canvas id="chart-esc-etapas"></canvas></div>
+                </div>
+                <div class="card chart-card">
+                    <h3 class="card-title">Habilidades Críticas por Escola</h3>
+                    <div class="chart-wrapper" style="height:240px;"><canvas id="chart-esc-criticas"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Heatmap -->
+            <div class="card" style="margin-top:12px; padding:16px 20px;">
+                <h3 class="card-title" style="margin-bottom:14px;">Matriz de Desempenho — Escola × Etapa</h3>
+                <div id="esc-heatmap" style="overflow-x:auto;"></div>
+            </div>
+
+        </section>
+
+        <!-- PAGE: DETALHAMENTO -->
+        <section id="page-detalhamento" class="page">
+            <div class="section-header"><h2>Tabela Detalhada</h2></div>
+            <div class="table-wrapper">
+                <table id="tabela-detalhe">
+                    <thead>
+                        <tr>
+                            <th>Escola</th>
+                            <th>Ano</th>
+                            <th>Componente</th>
+                            <th>Habilidade</th>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th>Acerto %</th>
+                            <th>Faixa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- PAGE: RELATÓRIOS -->
+        <section id="page-relatorios" class="page">
+            <div class="section-header">
+                <h2>Relatórios por Escola</h2>
+                <p>Selecione uma escola nos filtros do topo para visualizar e baixar o relatório completo em PDF.</p>
+            </div>
+
+            <div class="card">
+                <div class="report-toolbar">
+                    <div class="report-toolbar-main">
+                        <div class="report-summary" id="report-summary">
+                            Escolha uma escola para gerar o relatório.
+                        </div>
+                        <div class="report-subfilters">
+                            <div class="filter-group report-filter-group">
+                                <label for="report-filter-faixa">Faixa</label>
+                                <select id="report-filter-faixa">
+                                    <option value="Todas">Todas</option>
+                                    <option value="Crítico">Crítico</option>
+                                    <option value="Atenção">Atenção</option>
+                                    <option value="Adequado">Adequado</option>
+                                    <option value="Crítico + Atenção">Crítico + Atenção</option>
+                                </select>
+                            </div>
+                            <div class="filter-group report-filter-group">
+                                <label for="report-sort-order">Ordenação</label>
+                                <select id="report-sort-order">
+                                    <option value="acerto_desc">Percentual de acerto (decrescente)</option>
+                                    <option value="acerto_asc">Percentual de acerto (crescente)</option>
+                                    <option value="codigo_asc">Código da habilidade</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="report-actions">
+                        <button id="btn-download-report" class="btn-primary" type="button" disabled>
+                            <span class="material-icons-round">picture_as_pdf</span>
+                            <span>Baixar PDF</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="report-empty" id="report-empty">
+                    Selecione uma escola específica para exibir as habilidades com descrição e percentual de acerto.
+                </div>
+                <div class="table-wrapper hidden" id="report-table-wrapper">
+                    <table id="tabela-relatorio">
+                        <thead>
+                            <tr>
+                                <th>Ano</th>
+                                <th>Componente</th>
+                                <th>Habilidade</th>
+                                <th>Código</th>
+                                <th>Descrição</th>
+                                <th>Acerto %</th>
+                                <th>Faixa</th>
+                                <th>Nível</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
