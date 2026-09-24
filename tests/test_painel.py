@@ -53,6 +53,28 @@ class PainelTests(unittest.TestCase):
                 self.assertEqual(data['indicadores']['total_escolas'], 6 if year in (2,4,5) else 5)
                 self.assertEqual(sum(data['distribuicao']['values']), len(data['itens']))
 
+    def test_skill_mapping_preserves_distinct_items(self):
+        items = get_painel()['itens']
+        self.assertEqual(len(items), 236)
+        self.assertTrue(all(r['habilidade_descritor'] and r['habilidade_descritor'] != r['caderno'] for r in items))
+        first = next(r for r in items if r['ano'] == 2 and r['sigla'] == 'LP' and r['item_numero'] == 1)
+        self.assertEqual(first['habilidade_descritor'], 'D02_2EF')
+        self.assertEqual(len({r['item_key'] for r in items}), 236)
+
+    def test_missing_and_ambiguous_skill_matches_are_rejected(self):
+        from backend.import_skills import read_skills
+        from build import DEFAULT_SKILLS
+        with self.assertRaisesRegex(ValueError, 'sem correspondência'):
+            read_skills(DEFAULT_SKILLS, {'x': ('x', 2, 'LP', 'P0201', 1, 'Descrição inexistente')})
+        rows = [('2º ano', 'Língua Portuguesa', code, 'Descrição', 'AVALIE.CE 2026.2', 'Rede municipal')
+                for code in ('D01', 'D02')]
+        from unittest.mock import MagicMock
+        workbook = MagicMock()
+        workbook.__getitem__.return_value.iter_rows.return_value = rows
+        with patch('backend.import_skills.openpyxl.load_workbook', return_value=workbook):
+            with self.assertRaisesRegex(ValueError, 'ambíguos'):
+                read_skills(DEFAULT_SKILLS, {})
+
     def test_reference_cell_and_independent_sql_average(self):
         data = get_painel('EEF FIRMINO JOSÉ', '2º Ano', 'Língua Portuguesa')
         row = data['itens'][0]

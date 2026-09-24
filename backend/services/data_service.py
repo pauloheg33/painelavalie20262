@@ -65,6 +65,7 @@ def load_rows(conn):
     rows = conn.execute("""
         SELECT s.name escola, i.id item_key, i.year ano, i.component sigla,
                i.booklet caderno, i.number item_numero, i.description habilidade_descricao,
+               i.skill_code habilidade_descritor,
                r.rate * 100 acerto_pct, r.source_sheet origem_aba, r.source_row origem_linha,
                a.registros_avaliacao, a.acertos_item
         FROM item_rates r JOIN schools s ON s.id=r.school_id JOIN items i ON i.id=r.item_id
@@ -81,7 +82,7 @@ def load_rows(conn):
         row.update(avaliacao=AVALIACAO, ano_escolar=f"{row['ano']}º Ano",
                    componente=COMPONENTES[row["sigla"]], habilidade_codigo=row["item_key"],
                    habilidade_pos=f"Item {row['item_numero']:02d}",
-                   habilidade_descritor=row["caderno"], faixa=classificar_faixa(row["acerto_pct"]))
+                   faixa=classificar_faixa(row["acerto_pct"]))
         result.append(row)
     return result
 

@@ -85,7 +85,7 @@ def get_student_detail(record_id, componente=None):
             clauses.append('i.component=?')
             params.append(next((code for code,name in COMPONENTES.items() if name == componente),'INVALID'))
         items = [dict(row) for row in conn.execute('''SELECT i.number numero,i.component sigla,
-            i.description habilidade,a.alternative alternativa,a.is_correct acerto
+            i.description habilidade,i.skill_code habilidade_codigo,a.alternative alternativa,a.is_correct acerto
             FROM item_answers a JOIN items i ON i.id=a.item_id WHERE ''' + ' AND '.join(clauses)
             + ' ORDER BY i.component,i.number', params)]
     return {**dict(record), 'itens':items}

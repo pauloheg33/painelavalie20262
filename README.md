@@ -81,3 +81,8 @@ python -m unittest discover -s tests -v
 ```
 
 Os testes exigem as duas fontes locais. Verificam cobertura, separação dos cadernos, denominadores reais, contagem de avaliações sem duplicação, taxa de referência, médias independentes, listas de erros, filtros vazios, limites de classificação e preservação do banco em importação inválida.
+# Códigos das habilidades
+
+A fonte `backend/data/habilidades_avalie_ce_2026_2.xlsx` é integrada por `build.py` (opção `--skills`). O vínculo exige o mesmo ano, componente e descrição, normalizando apenas acentos, pontuação e espaços. Correspondências ausentes ou ambíguas interrompem a importação antes de substituir o banco. Os 236 itens têm código associado; itens que avaliam a mesma habilidade continuam separados. A origem da associação fica registrada no SQLite e o hash da planilha nos metadados.
+
+Cards, detalhamento e relatórios mostram o código da habilidade. O caderno continua preservado na base e nos resultados por prova.

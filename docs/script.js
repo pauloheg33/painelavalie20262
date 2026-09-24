@@ -246,9 +246,10 @@ function loadHabilidades() {
         const cls = faixaClass(h.faixa);
         card.className = 'hab-card ' + cls;
         if (h.habilidade_codigo === habilidadeSelecionadaKey) card.classList.add('active');
-        const codigoMatriz = h.caderno;
+        const codigoMatriz = h.habilidade_descritor;
         card.innerHTML = `
-            <span class="hab-code">${sanitize(itemLabel(h))}<br>${sanitize(codigoMatriz)}</span>
+            <span class="hab-code">${sanitize(itemLabel(h))}</span>
+            <span class="hab-skill-code">${sanitize(codigoMatriz)}</span>
             <span class="hab-pct">${h.acerto_pct}%</span>
             <span class="hab-faixa">${h.faixa}</span>
         `;
@@ -987,7 +988,7 @@ async function downloadRelatorioPdf() {
             metaWidth
         );
         const metaLine2 = doc.splitTextToSize(
-            `Acerto: ${row.acerto_pct}%   |   Faixa: ${row.faixa || '-'}   |   Registros: ${row.registros_avaliacao ?? '-'}   |   Caderno: ${row.habilidade_descritor || '-'}`,
+            `Acerto: ${row.acerto_pct}%   |   Faixa: ${row.faixa || '-'}   |   Registros: ${row.registros_avaliacao ?? '-'}   |   Habilidade: ${row.habilidade_descritor || '-'}`,
             metaWidth
         );
         const metaLines = [...metaLine1, ...metaLine2];

@@ -151,7 +151,7 @@ async function showStudentDetail(id) {
             content.appendChild(heading);
             const grid = document.createElement('div');
             grid.className = 'student-answer-grid';
-            grid.innerHTML = items.map(item => `<div class="student-answer${item.acerto ? '' : ' wrong'}" title="${sanitize(item.habilidade).replace(/"/g,'&quot;')}">
+            grid.innerHTML = items.map(item => `<div class="student-answer${item.acerto ? '' : ' wrong'}" title="${sanitize(item.habilidade_codigo + ' — ' + item.habilidade).replace(/"/g,'&quot;')}">
                 <strong>Item ${String(item.numero).padStart(2,'0')}</strong><small>${item.acerto ? 'Acerto' : 'Erro'}</small>
                 <small>Resposta: ${sanitize(item.alternativa || 'Não registrada')}</small></div>`).join('');
             content.appendChild(grid);

@@ -14,10 +14,12 @@ import openpyxl
 
 from backend.services.data_service import AVALIACAO, DEFAULT_DB
 from backend.import_records import read_individual
+from backend.import_skills import read_skills
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_SOURCE = ROOT / "backend" / "data" / "DADOS_ACERTO_POR_HABILIDADE.xlsx"
 DEFAULT_INDIVIDUAL = ROOT / "backend" / "data" / "Database.xlsx"
+DEFAULT_SKILLS = ROOT / "backend" / "data" / "habilidades_avalie_ce_2026_2.xlsx"
 BOOKLETS = {2: {"LP": ("P0201", 1, 22), "MT": ("M0201", 1, 22)},
             4: {"LP": ("C0401", 1, 22), "MT": ("C0401", 23, 44)},
             5: {"LP": ("C0501", 1, 22), "MT": ("C0501", 23, 44)},
@@ -30,6 +32,7 @@ CREATE TABLE items (
  id TEXT PRIMARY KEY, year INTEGER NOT NULL CHECK(year IN (2,4,5,8,9)),
  component TEXT NOT NULL CHECK(component IN ('LP','MT')), booklet TEXT NOT NULL,
  number INTEGER NOT NULL, description TEXT NOT NULL,
+ skill_code TEXT NOT NULL, skill_source_sheet TEXT NOT NULL, skill_source_row INTEGER NOT NULL,
  UNIQUE(year, component, booklet, number)
 );
 CREATE TABLE item_rates (
@@ -106,11 +109,15 @@ def read_source(source):
     return records, definitions
 
 
-def build(source=DEFAULT_SOURCE, database=DEFAULT_DB, individual=DEFAULT_INDIVIDUAL):
+def build(source=DEFAULT_SOURCE, database=DEFAULT_DB, individual=DEFAULT_INDIVIDUAL, skills=DEFAULT_SKILLS):
     source, database = Path(source).resolve(), Path(database).resolve()
     if source == database:
         raise ValueError("O banco de destino não pode substituir a planilha de origem")
     records, items = read_source(source)
+    skills = Path(skills).resolve()
+    if skills == database:
+        raise ValueError('O banco não pode substituir a planilha de habilidades')
+    skill_matches = read_skills(skills, items)
     schools = {name: idx for idx, name in enumerate(sorted({r[0] for r in records}), 1)}
     individual = Path(individual).resolve() if individual else None
     evaluations, answers, issues = [], [], []
@@ -131,7 +138,10 @@ def build(source=DEFAULT_SOURCE, database=DEFAULT_DB, individual=DEFAULT_INDIVID
                 "taxas_por_escola_item": len(records), "itens_distintos": len(items),
                 "escolas": len(schools), "base_individual_importada": bool(evaluations),
                 "registros_avaliacao": len(evaluations) if evaluations else None,
-                "estudantes_distintos": None, "schema_version": 2,
+                "estudantes_distintos": None, "schema_version": 3,
+                "skills_source": skills.name,
+                "skills_sha256": hashlib.sha256(skills.read_bytes()).hexdigest(),
+                "itens_com_habilidade": len(skill_matches),
                 "taxas_reconciliadas": len(records) if evaluations else 0}
     metadata['divergencias_totais_listas'] = issues
     if evaluations:
@@ -145,7 +155,8 @@ def build(source=DEFAULT_SOURCE, database=DEFAULT_DB, individual=DEFAULT_INDIVID
             conn.execute("PRAGMA foreign_keys=ON")
             conn.executescript(SCHEMA)
             conn.executemany("INSERT INTO schools VALUES (?,?)", [(idx, name) for name, idx in schools.items()])
-            conn.executemany("INSERT INTO items VALUES (?,?,?,?,?,?)", items.values())
+            conn.executemany("INSERT INTO items VALUES (?,?,?,?,?,?,?,?,?)",
+                             [item + skill_matches[key] for key, item in items.items()])
             conn.executemany("INSERT INTO item_rates VALUES (?,?,?,?,?)",
                              [(schools[s], key, rate, sheet, row) for s, key, rate, sheet, row in records])
             conn.executemany('INSERT INTO evaluation_records VALUES (?,?,?,?,?,?,?,?,?,?,?,?)', evaluations)
@@ -164,6 +175,7 @@ if __name__ == "__main__":
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
     parser.add_argument("--database", type=Path, default=DEFAULT_DB)
     parser.add_argument("--individual", type=Path, default=DEFAULT_INDIVIDUAL)
+    parser.add_argument("--skills", type=Path, default=DEFAULT_SKILLS)
     parser.add_argument("--consolidated-only", action="store_true")
     args = parser.parse_args()
-    build(args.source, args.database, None if args.consolidated_only else args.individual)
+    build(args.source, args.database, None if args.consolidated_only else args.individual, args.skills)
